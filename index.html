@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SplitPay</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>💸 SplitPay</h1>
+
+<div class="card">
+  <h2>Participants</h2>
+  <input id="userName" placeholder="Name">
+  <div class="row">
+    <input id="timeHours" type="number" placeholder="Hours">
+    <input id="timeMinutes" type="number" placeholder="Minutes">
+  </div>
+  <button onclick="addUser()">Add Participant</button>
+  <ul id="userList"></ul>
+</div>
+
+<div class="card">
+  <h2>Expenses</h2>
+
+  <select id="expenseType">
+    <option>Rent</option>
+    <option>Food</option>
+  </select>
+  <input id="expenseAmount" type="number" placeholder="Amount">
+
+  <label class="label">Who pays</label>
+  <div id="chipsContainer" class="chips"></div>
+  <button id="selectParticipantsBtn">Select participants</button>
+
+  <button onclick="addExpense()">Add Expense</button>
+  <ul id="expenseList"></ul>
+</div>
+
+<div class="card">
+  <h2>Totals</h2>
+  <button onclick="calculateTotals()">🔄 Recalculate</button>
+  <button onclick="exportText()">📤 Export</button>
+  <ul id="totalsList"></ul>
+</div>
+
+<!-- Bottom Sheet -->
+<div id="bottomSheet" class="bottom-sheet">
+  <div class="bottom-sheet-content">
+    <h3>Select Participants</h3>
+    <div>
+      <button onclick="selectAllParticipants()" class="select-all-btn">Select All</button>
+    </div>
+    <div id="bottomSheetOptions" class="participants-buttons"></div>
+    <button onclick="closeBottomSheet()" class="done-btn">Done</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
