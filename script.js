@@ -3,10 +3,10 @@ const EXPENSES_KEY = "expenses";
 
 /* ===== State ===== */
 let users = JSON.parse(localStorage.getItem(USERS_KEY)) || [
-  { name: "Anya", time: 4 },
-  { name: "Alya", time: 4 },
-  { name: "Christina", time: 4 },
-  { name: "Dasha", time: 5 }
+  { name: "Anya", time: 5 },
+  { name: "Alya", time: 5 },
+  { name: "Christina", time: 5 },
+  { name: "Dasha", time: 4 }
 ];
 
 let expenses = JSON.parse(localStorage.getItem(EXPENSES_KEY)) || [];
@@ -25,15 +25,12 @@ const chipsContainer = document.getElementById("chipsContainer");
 const bottomSheet = document.getElementById("bottomSheet");
 const bottomSheetOptions = document.getElementById("bottomSheetOptions");
 const selectParticipantsBtn = document.getElementById("selectParticipantsBtn");
+const selectAllBtn = document.getElementById("selectAllBtn");
 
 /* ===== Utils ===== */
 function save() {
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
   localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
-}
-
-function haptic() {
-  if (navigator.vibrate) navigator.vibrate(10);
 }
 
 /* ===== Participants ===== */
@@ -42,14 +39,11 @@ function addUser() {
   const h = Number(timeHours.value || 0);
   const m = Number(timeMinutes.value || 0);
   if (!name) return;
-
   users.push({ name, time: h + m / 60 });
   userName.value = timeHours.value = timeMinutes.value = "";
-
   save();
   renderUsers();
   calculateTotals();
-  haptic();
 }
 
 function renderUsers() {
@@ -62,7 +56,6 @@ function renderUsers() {
         <button onclick="deleteUser(${i})">Delete</button>
       </li>`;
   });
-  renderChips();
 }
 
 function editUser(i) {
@@ -82,17 +75,6 @@ function deleteUser(i) {
   renderUsers();
   renderExpenses();
   calculateTotals();
-}
-
-/* ===== Chips ===== */
-function renderChips() {
-  chipsContainer.innerHTML = "";
-  selectedUsersIndexes.forEach(i => {
-    const chip = document.createElement("div");
-    chip.className = "chip";
-    chip.textContent = users[i].name;
-    chipsContainer.appendChild(chip);
-  });
 }
 
 /* ===== Bottom Sheet ===== */
@@ -115,8 +97,12 @@ selectParticipantsBtn.onclick = () => {
   bottomSheet.classList.add("show");
 };
 
+selectAllBtn.onclick = () => {
+  selectedUsersIndexes = users.map((_, i) => i);
+  Array.from(bottomSheetOptions.children).forEach(btn => btn.classList.add("selected"));
+};
+
 function closeBottomSheet() {
-  renderChips();
   bottomSheet.classList.remove("show");
 }
 
@@ -133,8 +119,7 @@ function addExpense() {
 
   expenseAmount.value = "";
   selectedUsersIndexes = [];
-  renderChips();
-  save();
+  closeBottomSheet();
   renderExpenses();
   calculateTotals();
 }
@@ -163,40 +148,29 @@ function calculateTotals() {
   users.forEach(u => totals[u.name] = 0);
 
   expenses.forEach(e => {
-
-    /* Еда — просто поровну */
     if (e.type === "Food") {
       const part = e.amount / e.users.length;
       e.users.forEach(u => totals[u.name] += part);
       return;
     }
 
-    /* ===== Аренда ===== */
     const times = e.users.map(u => u.time);
     const minTime = Math.min(...times);
     const maxTime = Math.max(...times);
-
     const pricePerHour = e.amount / maxTime;
 
-    /* 1. Общие часы */
+    // Общие часы
     const commonCost = minTime * pricePerHour;
     const commonPart = commonCost / e.users.length;
+    e.users.forEach(u => totals[u.name] += commonPart);
 
-    e.users.forEach(u => {
-      totals[u.name] += commonPart;
-    });
-
-    /* 2. Дополнительные часы */
+    // Дополнительные часы
     const stayed = e.users.filter(u => u.time > minTime);
     const extraHours = maxTime - minTime;
-
     if (extraHours > 0 && stayed.length > 0) {
       const extraCost = extraHours * pricePerHour;
       const extraPart = extraCost / stayed.length;
-
-      stayed.forEach(u => {
-        totals[u.name] += extraPart;
-      });
+      stayed.forEach(u => totals[u.name] += extraPart);
     }
   });
 
