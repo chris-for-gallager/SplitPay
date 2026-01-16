@@ -90,6 +90,7 @@ function renderChips() {
   chipsContainer.innerHTML = "";
 
   if (selectedUsersIndexes.length === 0) return;
+
   if (selectedUsersIndexes.length === users.length) {
     const chip = document.createElement("div");
     chip.className = "chip";
@@ -115,7 +116,10 @@ function openBottomSheet() {
   users.forEach((u, i) => {
     const btn = document.createElement("button");
     btn.textContent = u.name;
-    btn.className = selectedUsersIndexes.includes(i) ? "participant-btn selected" : "participant-btn";
+    btn.className = selectedUsersIndexes.includes(i)
+      ? "participant-btn selected"
+      : "participant-btn";
+
     btn.onclick = () => {
       if (selectedUsersIndexes.includes(i)) {
         selectedUsersIndexes = selectedUsersIndexes.filter(x => x !== i);
@@ -124,6 +128,7 @@ function openBottomSheet() {
       }
       btn.classList.toggle("selected");
     };
+
     bottomSheetOptions.appendChild(btn);
   });
 
@@ -137,7 +142,7 @@ function closeBottomSheet() {
 
 function selectAllParticipants() {
   selectedUsersIndexes = users.map((_, i) => i);
-  openBottomSheet(); // обновляем кнопки с выбранными
+  openBottomSheet();
 }
 
 /* ===== Expenses ===== */
@@ -146,11 +151,10 @@ function addExpense() {
   if (!amount) return;
   if (selectedUsersIndexes.length === 0) return alert("Select participants");
 
-  const involved = selectedUsersIndexes.map(i => users[i]);
   expenses.push({
     type: expenseType.value,
     amount,
-    users: involved
+    users: selectedUsersIndexes.map(i => users[i])
   });
 
   expenseAmount.value = "";
@@ -165,8 +169,11 @@ function addExpense() {
 function renderExpenses() {
   expenseList.innerHTML = "";
   expenses.forEach((e, i) => {
-    expenseList.innerHTML += `<li><strong>${e.type}</strong>: ${e.amount} ₽ — ${e.users.map(u=>u.name).join(", ")}
-      <button class="btn-delete" onclick="deleteExpense(${i})">Delete</button></li>`;
+    expenseList.innerHTML += `
+      <li>
+        <strong>${e.type}</strong>: ${e.amount} ₽ — ${e.users.map(u => u.name).join(", ")}
+        <button class="btn-delete" onclick="deleteExpense(${i})">Delete</button>
+      </li>`;
   });
 }
 
@@ -180,8 +187,61 @@ function deleteExpense(i) {
   }
 }
 
-/* ===== Totals ===== */
+/* ===== Totals (human logic) ===== */
 function calculateTotals() {
+  const totals = {};
+  users.forEach(u => totals[u.name] = 0);
+
+  expenses.forEach(e => {
+
+    // Еда — поровну
+    if (e.type === "Food") {
+      const part = e.amount / e.users.length;
+      e.users.forEach(u => totals[u.name] += part);
+      return;
+    }
+
+    // Аренда — по-человечески
+    const times = e.users.map(u => u.time);
+    const minTime = Math.min(...times);
+    const maxTime = Math.max(...times);
+
+    const pricePerHour = e.amount / maxTime;
+
+    // общие часы
+    const commonCost = minTime * pricePerHour;
+    const commonPart = commonCost / e.users.length;
+
+    e.users.forEach(u => {
+      totals[u.name] += commonPart;
+    });
+
+    // дополнительные часы
+    e.users.forEach(u => {
+      const extra = u.time - minTime;
+      if (extra > 0) {
+        totals[u.name] += extra * pricePerHour;
+      }
+    });
+  });
+
+  totalsList.innerHTML = "";
+  for (const name in totals) {
+    totalsList.innerHTML += `<li>${name}: ${totals[name].toFixed(2)} ₽</li>`;
+  }
+
+  haptic();
+}
+
+/* ===== Export ===== */
+function exportText() {
+  let text = "Expenses:\n";
+  expenses.forEach(e => {
+    text += `${e.type} — ${e.amount} ₽ (${e.users.map(u => u.name).join(", ")})\n`;
+  });
+
+  text += "\nTotals:\n";
+
   const totals = {};
   users.forEach(u => totals[u.name] = 0);
 
@@ -190,37 +250,27 @@ function calculateTotals() {
       const part = e.amount / e.users.length;
       e.users.forEach(u => totals[u.name] += part);
     } else {
-      const t = e.users.reduce((s,u)=>s+u.time,0);
-      e.users.forEach(u=>totals[u.name] += e.amount*(u.time/t));
+      const times = e.users.map(u => u.time);
+      const minTime = Math.min(...times);
+      const maxTime = Math.max(...times);
+      const pricePerHour = e.amount / maxTime;
+
+      const commonCost = minTime * pricePerHour;
+      const commonPart = commonCost / e.users.length;
+
+      e.users.forEach(u => totals[u.name] += commonPart);
+
+      e.users.forEach(u => {
+        const extra = u.time - minTime;
+        if (extra > 0) totals[u.name] += extra * pricePerHour;
+      });
     }
   });
 
-  totalsList.innerHTML = "";
   for (const name in totals) {
-    totalsList.innerHTML += `<li>${name}: ${totals[name].toFixed(2)} ₽</li>`;
+    text += `${name}: ${totals[name].toFixed(2)} ₽\n`;
   }
-  haptic();
-}
 
-/* ===== Export ===== */
-function exportText() {
-  let text = "Expenses:\n";
-  expenses.forEach(e => text+=`${e.type} — ${e.amount} ₽ (${e.users.map(u=>u.name).join(", ")})\n`);
-  text += "\nTotals:\n";
-  const totals = {};
-  users.forEach(u=>totals[u.name]=0);
-  expenses.forEach(e=>{
-    if(e.type==="Food"){
-      const part = e.amount/e.users.length;
-      e.users.forEach(u=>totals[u.name]+=part);
-    } else {
-      const t = e.users.reduce((s,u)=>s+u.time,0);
-      e.users.forEach(u=>totals[u.name]+=e.amount*(u.time/t));
-    }
-  });
-  for(const name in totals){
-    text+=`${name}: ${totals[name].toFixed(2)} ₽\n`;
-  }
   navigator.clipboard.writeText(text);
   haptic();
   alert("Copied 👍");
