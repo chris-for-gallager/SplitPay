@@ -1,49 +1,50 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Аренда зала — расчёт по-человечески</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>SplitPay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>Аренда зала</h1>
+<h1>💸 SplitPay</h1>
 
-<!-- Добавление участников -->
-<div>
-  <input id="userName" placeholder="Имя">
-  <input id="timeHours" type="number" placeholder="часы" min="0">
-  <input id="timeMinutes" type="number" placeholder="мин" min="0" max="59">
-  <button onclick="addUser()">Добавить участника</button>
-</div>
+<section>
+  <h2>Участники и время</h2>
+  <div id="participants"></div>
 
-<ul id="userList"></ul>
+  <input id="name" placeholder="Имя">
+  <input id="hours" type="number" placeholder="Часы">
+  <input id="minutes" type="number" placeholder="Минуты">
+  <button onclick="addParticipant()">Добавить</button>
+</section>
 
-<!-- Добавление расхода -->
-<div>
-  <select id="expenseType">
-    <option value="Rent">Аренда зала</option>
-    <option value="Food">Еда</option>
+<section>
+  <h2>Траты</h2>
+
+  <select id="category">
+    <option value="rent">Аренда</option>
+    <option value="food">Еда</option>
   </select>
-  <input id="expenseAmount" type="number" placeholder="Сумма" min="0">
-  <button id="selectParticipantsBtn">Выбрать участников</button>
-  <button onclick="addExpense()">Добавить расход</button>
-</div>
 
-<div id="chipsContainer"></div>
+  <input id="amount" type="number" placeholder="Сумма">
 
-<ul id="expenseList"></ul>
+  <div id="expenseParticipants"></div>
 
-<h2>Итого</h2>
-<ul id="totalsList"></ul>
+  <button onclick="selectAll()">Выбрать всех</button>
+  <button onclick="addExpense()">Добавить трату</button>
 
-<!-- Bottom sheet -->
-<div id="bottomSheet" class="bottom-sheet">
-  <div id="bottomSheetOptions" class="options"></div>
-  <button id="selectAllBtn">Выбрать всех</button>
-  <button onclick="closeBottomSheet()">Готово</button>
-</div>
+  <div id="expenses"></div>
+</section>
 
-<script src="script.js"></script>
+<section>
+  <h2>Итог</h2>
+  <button onclick="calculate()">Посчитать</button>
+  <pre id="result"></pre>
+</section>
+
+<script src="app.js"></script>
 </body>
 </html>
