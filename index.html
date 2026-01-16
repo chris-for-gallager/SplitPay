@@ -1,67 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SplitPay</title>
-
-  <!-- iOS icon -->
-  <link rel="apple-touch-icon" href="icon.png">
-
-  <!-- PWA manifest -->
-  <link rel="manifest" href="manifest.json">
-
+  <title>Аренда зала — расчёт по-человечески</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>💸 SplitPay</h1>
+<h1>Аренда зала</h1>
 
-<div class="card">
-  <h2>Participants</h2>
-  <input id="userName" placeholder="Name">
-  <div class="row">
-    <input id="timeHours" type="number" placeholder="Hours">
-    <input id="timeMinutes" type="number" placeholder="Minutes">
-  </div>
-  <button onclick="addUser()">Add Participant</button>
-  <ul id="userList"></ul>
+<!-- Добавление участников -->
+<div>
+  <input id="userName" placeholder="Имя">
+  <input id="timeHours" type="number" placeholder="часы" min="0">
+  <input id="timeMinutes" type="number" placeholder="мин" min="0" max="59">
+  <button onclick="addUser()">Добавить участника</button>
 </div>
 
-<div class="card">
-  <h2>Expenses</h2>
+<ul id="userList"></ul>
 
+<!-- Добавление расхода -->
+<div>
   <select id="expenseType">
-    <option>Rent</option>
-    <option>Food</option>
+    <option value="Rent">Аренда зала</option>
+    <option value="Food">Еда</option>
   </select>
-  <input id="expenseAmount" type="number" placeholder="Amount">
-
-  <label class="label">Who pays</label>
-  <div id="chipsContainer" class="chips"></div>
-  <button id="selectParticipantsBtn">Select participants</button>
-
-  <button onclick="addExpense()">Add Expense</button>
-  <ul id="expenseList"></ul>
+  <input id="expenseAmount" type="number" placeholder="Сумма" min="0">
+  <button id="selectParticipantsBtn">Выбрать участников</button>
+  <button onclick="addExpense()">Добавить расход</button>
 </div>
 
-<div class="card">
-  <h2>Totals</h2>
-  <button onclick="calculateTotals()">🔄 Recalculate</button>
-  <button onclick="exportText()">📤 Export</button>
-  <ul id="totalsList"></ul>
-</div>
+<ul id="expenseList"></ul>
 
-<!-- Bottom Sheet -->
+<h2>Итого</h2>
+<ul id="totalsList"></ul>
+
+<!-- Bottom sheet для выбора участников -->
 <div id="bottomSheet" class="bottom-sheet">
-  <div class="bottom-sheet-content">
-    <h3>Select Participants</h3>
-    <div>
-      <button onclick="selectAllParticipants()" class="select-all-btn">Select All</button>
-    </div>
-    <div id="bottomSheetOptions" class="participants-buttons"></div>
-    <button onclick="closeBottomSheet()" class="done-btn">Done</button>
-  </div>
+  <div id="bottomSheetOptions" class="options"></div>
+  <button id="selectAllBtn">Выбрать всех</button>
+  <button onclick="closeBottomSheet()">Готово</button>
 </div>
 
 <script src="script.js"></script>
